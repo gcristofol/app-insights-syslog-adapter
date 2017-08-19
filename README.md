@@ -1,0 +1,1 @@
+# app-insights-syslog-adapter
