@@ -1,9 +1,8 @@
 package main
 
 import (
-"os"
+	"os"
 	"fmt"
-	"reflect"
 	"gopkg.in/mcuadros/go-syslog.v2"
 	"github.com/Microsoft/ApplicationInsights-Go/appinsights"
 )
@@ -21,26 +20,27 @@ func main() {
 	server.SetHandler(handler)
 	
 	
-	if err := server.ListenTCP("0.0.0.0:5000"); err != nil {
+	if err := server.ListenTCP(cnf.Address); err != nil {
 			fmt.Fprintf(os.Stderr, "err %v\n", err)
 	}
 	
-	if err := server.ListenUDP("0.0.0.0:5000"); err != nil {
+	if err := server.ListenUDP(cnf.Address); err != nil {
 			fmt.Fprintf(os.Stderr, "err %v\n", err)
 	}
 
 	server.Boot()
 
-	client := appinsights.NewTelemetryClient("<instrumentation key>")
-	client.TrackEvent("custom event")
-	client.TrackMetric("custom metric", 123)
-	client.TrackTrace("trace message")
+	client := appinsights.NewTelemetryClient(cnf.InstrumentationKey)
+	fmt.Printf("App Insights client using key [%v]\n",cnf.InstrumentationKey)
+	//client.TrackMetric("custom metric", 123)
+	//client.TrackTEvent("trace message")
 
 	go func(channel syslog.LogPartsChannel) {
 		for logParts := range channel {
 			fmt.Println(logParts)
-			fmt.Println(logParts["content"])
-			fmt.Println(reflect.TypeOf(logParts))
+			//var content string
+			content := logParts["content"].(string)
+			client.TrackTrace(content)
 		}
 	}(channel)
 
