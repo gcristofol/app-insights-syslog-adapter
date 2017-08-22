@@ -38,9 +38,15 @@ func main() {
 	go func(channel syslog.LogPartsChannel) {
 		for logParts := range channel {
 			fmt.Println(logParts)
-			//var content string
-			content := logParts["content"].(string)
-			client.TrackTrace(content)
+			// trace content/message string on type assertion
+			if content, ok := logParts["content"].(string); ok {
+                client.TrackTrace(content)
+            }
+            
+            if message, ok := logParts["message"].(string); ok {
+                client.TrackTrace(message)
+            }
+			
 		}
 	}(channel)
 
